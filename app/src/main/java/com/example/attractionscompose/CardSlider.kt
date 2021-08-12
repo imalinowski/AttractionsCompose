@@ -1,7 +1,9 @@
 package com.example.attractionscompose
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -17,11 +19,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.attractionscompose.ui.theme.Purple500
 
+lateinit var listState : LazyListState
 @Composable
 fun CardSlider(modifier: Modifier = Modifier, cards:List<Color>){
-    val listState = rememberLazyListState()
+    listState = rememberLazyListState()
     Column(Modifier.fillMaxWidth()){
-        LazyRow {
+        LazyRow (state = listState){
             items(cards.size) { index ->
                 Box(
                     modifier = modifier
