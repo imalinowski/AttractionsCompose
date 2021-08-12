@@ -58,14 +58,13 @@ fun StepScreen(name: String = "Android", cards : List<Color>) {
     BottomSheetScaffold(
         scaffoldState = bottomSheetScaffoldState,
         sheetContent = {
-            Player(bottomSheetScaffoldState.currentFraction())
+            PlayerScreen(Modifier.clickable {
+                coroutineScope.launch {
+                    bottomSheetScaffoldState.bottomSheetState.expand()
+                }
+            },bottomSheetScaffoldState.currentFraction())
         },
         sheetPeekHeight = 70.dp,
-        modifier = Modifier.clickable {
-            coroutineScope.launch {
-                bottomSheetScaffoldState.bottomSheetState.expand()
-            }
-        }
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Text(
