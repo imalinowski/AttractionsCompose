@@ -3,6 +3,7 @@ package com.example.attractionscompose
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -17,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.attractionscompose.ui.theme.AttractionsComposeTheme
 import com.example.attractionscompose.ui.theme.Purple500
+import kotlinx.coroutines.launch
 
 val colors = listOf(Color.Yellow, Color.Cyan, Purple500, Color.Red, Color.Blue, Color.Green)
 class MainActivity : ComponentActivity() {
@@ -33,18 +35,37 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+@ExperimentalMaterialApi
+fun BottomSheetScaffoldState.currentFraction(): Float {
+    val fraction = bottomSheetState.progress.fraction
+    val targetValue = bottomSheetState.targetValue
+    val currentValue = bottomSheetState.currentValue
 
+    return when {
+        currentValue == BottomSheetValue.Collapsed && targetValue == BottomSheetValue.Collapsed -> 1f
+        currentValue == BottomSheetValue.Expanded && targetValue == BottomSheetValue.Expanded -> 0f
+        currentValue == BottomSheetValue.Collapsed && targetValue == BottomSheetValue.Expanded -> 1f - fraction
+        else -> fraction
+    }
+}
 @ExperimentalMaterialApi
 @Composable
 fun StepScreen(name: String = "Android", cards : List<Color>) {
-    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
-
+    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
+        bottomSheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Collapsed)
+    )
+    val coroutineScope = rememberCoroutineScope()
     BottomSheetScaffold(
         scaffoldState = bottomSheetScaffoldState,
         sheetContent = {
-            Player()
+            Player(bottomSheetScaffoldState.currentFraction())
         },
-        sheetPeekHeight = 60.dp
+        sheetPeekHeight = 70.dp,
+        modifier = Modifier.clickable {
+            coroutineScope.launch {
+                bottomSheetScaffoldState.bottomSheetState.expand()
+            }
+        }
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Text(
@@ -56,7 +77,7 @@ fun StepScreen(name: String = "Android", cards : List<Color>) {
                 cards  = cards
             )
             Text(
-                text = "$name ".repeat(100),
+                text = "$name ".repeat(50),
                 modifier = Modifier.align(CenterHorizontally),
                 textAlign = TextAlign.Center,
                 color = if(isSystemInDarkTheme()) White else Black
