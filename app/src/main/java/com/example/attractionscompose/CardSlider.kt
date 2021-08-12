@@ -1,6 +1,7 @@
 package com.example.attractionscompose
 
 import android.util.Log
+import android.widget.ArrayAdapter
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
@@ -8,7 +9,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
@@ -19,16 +20,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.attractionscompose.ui.theme.Purple500
 
-lateinit var listState : LazyListState
 @Composable
 fun CardSlider(modifier: Modifier = Modifier, cards:List<Color>){
-    listState = rememberLazyListState()
+    val listState = rememberLazyListState()
+    Log.i("RASP", "${listState.firstVisibleItemScrollOffset}")
     Column(Modifier.fillMaxWidth()){
-        LazyRow (state = listState){
+        LazyRow (
+            state = listState,
+            contentPadding = PaddingValues(horizontal = 50.dp),
+            horizontalArrangement = Arrangement.spacedBy(50.dp)
+        ){
             items(cards.size) { index ->
                 Box(
                     modifier = modifier
-                        .padding(horizontal = 50.dp)
                         .width(300.dp)
                         .height(300.dp)
                         .clip(RoundedCornerShape(10.dp))
@@ -55,7 +59,7 @@ private fun DotsNavigation(modifier: Modifier = Modifier, size: Int, cur : Int){
                     .padding(horizontal = 2.dp)
                     .size(5.dp)
                     .clip(CircleShape)
-                    .background(if(i == cur) Color.Red else Color.DarkGray)
+                    .background(if(i == cur) MaterialTheme.colors.primary else Color.DarkGray)
             )
         }
     }
