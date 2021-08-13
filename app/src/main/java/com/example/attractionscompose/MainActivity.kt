@@ -42,10 +42,10 @@ fun BottomSheetScaffoldState.currentFraction(): Float {
     val currentValue = bottomSheetState.currentValue
 
     return when {
-        currentValue == BottomSheetValue.Collapsed && targetValue == BottomSheetValue.Collapsed -> 1f
-        currentValue == BottomSheetValue.Expanded && targetValue == BottomSheetValue.Expanded -> 0f
-        currentValue == BottomSheetValue.Collapsed && targetValue == BottomSheetValue.Expanded -> 1f - fraction
-        else -> fraction
+        currentValue == BottomSheetValue.Collapsed && targetValue == BottomSheetValue.Collapsed -> 0f
+        currentValue == BottomSheetValue.Expanded && targetValue == BottomSheetValue.Expanded -> 1f
+        currentValue == BottomSheetValue.Collapsed && targetValue == BottomSheetValue.Expanded -> fraction
+        else -> 1f - fraction
     }
 }
 @ExperimentalMaterialApi
@@ -58,11 +58,18 @@ fun StepScreen(name: String = "Android", cards : List<Color>) {
     BottomSheetScaffold(
         scaffoldState = bottomSheetScaffoldState,
         sheetContent = {
-            PlayerScreen(Modifier.clickable {
+            PlayerScreen(
+                Modifier.clickable {
+                    coroutineScope.launch {
+                        bottomSheetScaffoldState.bottomSheetState.expand()
+                    }
+                },
+                bottomSheetScaffoldState.currentFraction()
+            ) {
                 coroutineScope.launch {
-                    bottomSheetScaffoldState.bottomSheetState.expand()
+                    bottomSheetScaffoldState.bottomSheetState.collapse()
                 }
-            },bottomSheetScaffoldState.currentFraction())
+            }
         },
         sheetPeekHeight = 70.dp,
     ) {
