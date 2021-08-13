@@ -1,6 +1,5 @@
 package com.example.attractionscompose
 
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -19,34 +18,68 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import kotlin.math.pow
+
+
+/*enum class Screen {
+    PLAYER,STEPS
+}
+var curScreen = Screen.PLAYER*/
 
 @ExperimentalMaterialApi
 @Composable
 fun PlayerScreen(modifier:Modifier = Modifier, alpha : Float = 1f, collapse : ()->Unit = {}){ // alpha = 0 collapsed alpha = 1 expanded
     val progress by remember { mutableStateOf(0.5f) }
-    Column (
-        Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colors.background)
-    ) {
-        Box(modifier = modifier.fillMaxWidth()){
-            //Log.i("RASP","alpha $alpha")
-            if(alpha != 1f)
-                MiniPLayer(modifier, 1 - alpha, progress)
-            if(alpha != 0f)
-                Header(modifier, alpha, collapse)
+    val navController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = "player") {
+        composable("player") {
+            Column (
+                Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colors.background)
+            ) {
+                Box(modifier = modifier.fillMaxWidth()){
+                    //Log.i("RASP","alpha $alpha")
+                    if(alpha != 1f)
+                        MiniPLayer(modifier, 1 - alpha, progress)
+                    if(alpha != 0f)
+                        Header(modifier,navController, alpha, collapse)
+                }
+                BigPlayer(modifier.padding(20.dp))
+                Text(text = " Android + Compose = <3 ".repeat(10),
+                    textAlign = TextAlign.Center,
+                    color = if(isSystemInDarkTheme()) Color.White else Color.Black,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         }
-        BigPlayer(modifier.padding(20.dp))
-        Text(text = " Android + Compose = <3 ".repeat(100),
-            textAlign = TextAlign.Center,
-            color = if(isSystemInDarkTheme()) Color.White else Color.Black
-        )
+        composable("steps") {
+            Column (
+                Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colors.background)
+            ) {
+                Header(modifier,navController, alpha, collapse)
+                Text("steps", modifier = Modifier.fillMaxSize())
+            }
+        }
     }
+    if(alpha < 1f && navController.currentBackStackEntry?.destination?.route != "player")
+        navController.navigate("player")
 }
 
 @Composable
-fun Header(modifier: Modifier = Modifier, alpha : Float = 0f, collapse : ()->Unit = {}){
+fun Header(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    alpha : Float = 0f,
+    collapse : ()->Unit = {},
+){
     Row (
         modifier
             .padding(10.dp)
@@ -78,13 +111,18 @@ fun Header(modifier: Modifier = Modifier, alpha : Float = 0f, collapse : ()->Uni
                 modifier = Modifier.align(CenterHorizontally)
             )
         }
+        val currentRoute = navController.currentBackStackEntry?.destination?.route
         IconButton(
-            onClick = { Log.i("RASP","hi") },
+            onClick = {
+                if(currentRoute == "player")
+                    navController.navigate("steps")
+                else  navController.navigate("player")
+            },
             enabled = alpha == 1f,
             modifier = Modifier.align(CenterVertically)
         ) {
             Icon(
-                Icons.Rounded.List, "Icon",
+                if(currentRoute == "player") Icons.Rounded.List else Icons.Rounded.Close, "Icon",
                 tint = MaterialTheme.colors.primaryVariant,
             )
         }
@@ -150,7 +188,7 @@ fun BigPlayer(modifier : Modifier = Modifier, progress: Float = 0.5f){
     ){
         Column(modifier) {
             Text("Welcome text")
-            Slider(value = progress, onValueChange = {})
+            Slider(value = progress, onValueChange = {  })
             Row(
                 Modifier.fillMaxWidth()
             ){
