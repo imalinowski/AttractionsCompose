@@ -1,6 +1,7 @@
 package com.example.attractionscompose
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -37,7 +38,12 @@ class MainActivity : ComponentActivity() {
 }
 @ExperimentalMaterialApi
 fun BottomSheetScaffoldState.currentFraction(): Float {
-    val fraction = bottomSheetState.progress.fraction
+    var fraction = 0f
+    try{
+        fraction = bottomSheetState.progress.fraction
+    }catch (e:NoSuchElementException){
+        Log.e("RASP", e.message.toString())
+    }
     val targetValue = bottomSheetState.targetValue
     val currentValue = bottomSheetState.currentValue
 

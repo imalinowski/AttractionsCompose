@@ -1,9 +1,11 @@
 package com.example.attractionscompose
 
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
@@ -11,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
@@ -28,12 +31,13 @@ fun PlayerScreen(modifier:Modifier = Modifier, alpha : Float = 1f, collapse : ()
             .background(MaterialTheme.colors.background)
     ) {
         Box(modifier = modifier.fillMaxWidth()){
-            Log.i("RASP","alpha $alpha")
+            //Log.i("RASP","alpha $alpha")
             if(alpha != 1f)
                 MiniPLayer(modifier, 1 - alpha, progress)
             if(alpha != 0f)
                 Header(modifier, alpha, collapse)
         }
+        BigPlayer(modifier.padding(20.dp))
         Text(text = " Android + Compose = <3 ".repeat(100),
             textAlign = TextAlign.Center,
             color = if(isSystemInDarkTheme()) Color.White else Color.Black
@@ -139,9 +143,69 @@ fun MiniPLayer(modifier:Modifier = Modifier, alpha : Float = 1f, progress : Floa
     }
 }
 
+@Composable
+fun BigPlayer(modifier : Modifier = Modifier, progress: Float = 0.5f){
+    Card (
+        modifier
+    ){
+        Column(modifier) {
+            Text("Welcome text")
+            Slider(value = progress, onValueChange = {})
+            Row(
+                Modifier.fillMaxWidth()
+            ){
+                Text("0:45",
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Start
+                )
+                Text("0:30",
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.End
+                )
+            }
+            Row(
+                Modifier
+                    .align(CenterHorizontally)
+            ){
+                val modifierBtn = Modifier.weight(1f).align(CenterVertically)
+                Spacer(modifierBtn)
+                IconButton(onClick = { Log.i("RASP","hi") },
+                        modifier = modifierBtn
+                ) {
+                    Icon(
+                        Icons.Rounded.Undo, "Icon",
+                        tint = MaterialTheme.colors.primaryVariant
+                    )
+                }
+                IconButton(
+                    onClick = { Log.i("RASP","hi") },
+                    modifier = modifierBtn.clip(CircleShape)
+                        .background(MaterialTheme.colors.secondary)
+                        .size(65.dp)
+                ) {
+                    Icon(
+                        Icons.Rounded.PlayArrow, "Icon",
+                        tint = MaterialTheme.colors.background
+                    )
+                }
+                IconButton(onClick = { Log.i("RASP","hi") },
+                    modifier = modifierBtn) {
+                    Icon(
+                        Icons.Rounded.Redo, "Icon",
+                        tint = MaterialTheme.colors.primaryVariant
+                    )
+                }
+                Text("1x", textAlign = TextAlign.Center,
+                    modifier = modifierBtn)
+            }
+        }
+    }
+}
 
 @ExperimentalMaterialApi
-@Preview
+@Preview(
+    //uiMode = UI_MODE_NIGHT_YES
+)
 @Composable
 fun PlayerPreview(){
     PlayerScreen(alpha = 1f)
