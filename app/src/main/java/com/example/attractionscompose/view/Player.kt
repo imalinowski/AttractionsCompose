@@ -26,15 +26,13 @@ import com.example.attractionscompose.model.Excursion
 import com.google.android.exoplayer2.SimpleExoPlayer
 import kotlin.math.pow
 
+var playing  = mutableStateOf(false)
+var progress = mutableStateOf(0.0f)
 
 @ExperimentalMaterialApi
 @Composable
 fun PlayerScreen(modifier:Modifier = Modifier, excursion: Excursion,  alpha : Float = 1f, collapse : ()->Unit = {}){ // alpha = 0 collapsed alpha = 1 expanded
-    var progress by remember { mutableStateOf(0.5f) }
     val navController = rememberNavController()
-    progress =
-        excursion.steps.first().player.value.contentPosition.toFloat() / excursion.steps.first().player.value.duration.toInt()
-    Log.i("Rasp", "progress $progress")
 
     NavHost(navController = navController, startDestination = "player") {
         composable("player") {
@@ -49,7 +47,6 @@ fun PlayerScreen(modifier:Modifier = Modifier, excursion: Excursion,  alpha : Fl
                         MiniPLayer(
                             modifier,
                             1 - alpha,
-                            progress ,
                             excursion.name.value,
                             excursion.steps.first().player.value,
                         )
@@ -58,7 +55,6 @@ fun PlayerScreen(modifier:Modifier = Modifier, excursion: Excursion,  alpha : Fl
                 }
                 BigPlayer(
                     modifier.padding(20.dp),
-                    progress = progress,
                     player = excursion.steps.first().player.value,
                 )
                 Text(text = excursion.steps.first().longText.value,
@@ -144,10 +140,11 @@ fun Header(
 }
 
 @Composable
-fun MiniPLayer(modifier:Modifier = Modifier, alpha : Float = 1f, progress : Float, name : String, player : SimpleExoPlayer){
+fun MiniPLayer(modifier:Modifier = Modifier, alpha : Float = 1f, name : String, player : SimpleExoPlayer){
+
     LinearProgressIndicator(
         backgroundColor = Color.White,
-        progress = progress,
+        progress = progress.value,
         color = MaterialTheme.colors.primary,
         modifier = Modifier.graphicsLayer(alpha = alpha.pow(10)).fillMaxWidth()
     )
@@ -165,16 +162,18 @@ fun MiniPLayer(modifier:Modifier = Modifier, alpha : Float = 1f, progress : Floa
             )
         }
         IconButton(onClick = {
+            playing.value = !player.isPlaying
             if(player.isPlaying)
-                player.stop()
-            else {
-                player.prepare()
+                player.pause()
+            else
                 player.play()
-            }
         },
             enabled = alpha == 1f) {
             Icon(
-                if(player.isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, "Icon",
+                if(playing.value)
+                    Icons.Rounded.Pause
+                else
+                    Icons.Rounded.PlayArrow, "Icon",
                 tint = MaterialTheme.colors.primaryVariant
             )
         }
@@ -183,7 +182,11 @@ fun MiniPLayer(modifier:Modifier = Modifier, alpha : Float = 1f, progress : Floa
             textAlign = TextAlign.Center,
             color = if(isSystemInDarkTheme()) Color.White else Color.Black
         )
-        IconButton(onClick = { Log.i("RASP","hi") }, enabled = alpha == 1f) {
+        IconButton(enabled = alpha == 1f,
+            onClick = {
+                player.seekTo(player.currentPosition - 5000)
+                progress.value = player.currentPosition.toFloat() / player.duration.toFloat()
+            }) {
             Icon(
                 Icons.Rounded.Undo, "Icon",
                 tint = MaterialTheme.colors.primaryVariant
@@ -194,7 +197,11 @@ fun MiniPLayer(modifier:Modifier = Modifier, alpha : Float = 1f, progress : Floa
             textAlign = TextAlign.Center,
             color = if(isSystemInDarkTheme()) Color.White else Color.Black
         )
-        IconButton(onClick = { Log.i("RASP","hi") }, enabled = alpha == 1f) {
+        IconButton(enabled = alpha == 1f,
+            onClick = {
+                player.seekTo(player.currentPosition + 5000)
+                progress.value = player.currentPosition.toFloat() / player.duration.toFloat()
+            }) {
             Icon(
                 Icons.Rounded.Redo, "Icon",
                 tint = MaterialTheme.colors.primaryVariant
@@ -204,14 +211,16 @@ fun MiniPLayer(modifier:Modifier = Modifier, alpha : Float = 1f, progress : Floa
 }
 
 @Composable
-fun BigPlayer(modifier : Modifier = Modifier, progress: Float = 0.5f, player : SimpleExoPlayer){
+fun BigPlayer(modifier : Modifier = Modifier, player : SimpleExoPlayer){
+
     Card (
         modifier
     ){
         Column(modifier) {
             Text("Welcome text")
-            Slider(value = progress, onValueChange = {
+            Slider(value = progress.value, onValueChange = {
                 player.seekTo((it * player.duration).toLong())
+                progress.value = player.currentPosition.toFloat() / player.duration.toFloat()
             })
             Row(
                 Modifier.fillMaxWidth()
@@ -237,8 +246,12 @@ fun BigPlayer(modifier : Modifier = Modifier, progress: Float = 0.5f, player : S
             ){
                 val modifierBtn = Modifier.weight(1f).align(CenterVertically)
                 Spacer(modifierBtn)
-                IconButton(onClick = { Log.i("RASP","hi") },
-                        modifier = modifierBtn
+                IconButton(
+                    modifier = modifierBtn,
+                    onClick = {
+                        player.seekTo(player.currentPosition - 5000)
+                        progress.value = player.currentPosition.toFloat() / player.duration.toFloat()
+                    }
                 ) {
                     Icon(
                         Icons.Rounded.Undo, "Icon",
@@ -247,24 +260,27 @@ fun BigPlayer(modifier : Modifier = Modifier, progress: Float = 0.5f, player : S
                 }
                 IconButton(
                     onClick = {
+                        playing.value = !player.isPlaying
                         if(player.isPlaying)
-                            player.stop()
-                        else {
-                            player.prepare()
+                            player.pause()
+                        else
                             player.play()
-                        }
                     },
                     modifier = modifierBtn.clip(CircleShape)
                         .background(MaterialTheme.colors.secondary)
                         .size(65.dp)
                 ) {
                     Icon(
-                        if(player.isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, "Icon",
+                        if(playing.value) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, "Icon",
                         tint = MaterialTheme.colors.background
                     )
                 }
-                IconButton(onClick = { Log.i("RASP","hi") },
-                    modifier = modifierBtn) {
+                IconButton(
+                    modifier = modifierBtn ,
+                    onClick = {
+                        player.seekTo(player.currentPosition + 5000)
+                        progress.value = player.currentPosition.toFloat() / player.duration.toFloat()
+                    }) {
                     Icon(
                         Icons.Rounded.Redo, "Icon",
                         tint = MaterialTheme.colors.primaryVariant

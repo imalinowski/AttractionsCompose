@@ -16,8 +16,13 @@ import com.android.volley.toolbox.Volley
 import com.example.attractionscompose.model.Excursion
 import com.example.attractionscompose.model.Step
 import com.example.attractionscompose.R
+import com.example.attractionscompose.view.progress
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.SimpleExoPlayer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application){
     private val data : Array<String> = (getApplication() as Context).resources.getStringArray(R.array.images_array)
@@ -81,5 +86,13 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             },
         ) { error -> Log.e("RASP", error.message.toString()) })
 
+        CoroutineScope(Dispatchers.Main).launch {
+            while(true){
+                delay((1000 / 60))
+                excursion.value?.steps?.first()?.player?.value!!.apply {
+                    progress.value = this.currentPosition.toFloat() / this.duration.toFloat()
+                }
+            }
+        }
     }
 }
