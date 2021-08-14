@@ -1,4 +1,4 @@
-package com.example.attractionscompose
+package com.example.attractionscompose.view
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -22,17 +22,13 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.attractionscompose.model.Excursion
 import kotlin.math.pow
 
 
-/*enum class Screen {
-    PLAYER,STEPS
-}
-var curScreen = Screen.PLAYER*/
-
 @ExperimentalMaterialApi
 @Composable
-fun PlayerScreen(modifier:Modifier = Modifier, alpha : Float = 1f, collapse : ()->Unit = {}){ // alpha = 0 collapsed alpha = 1 expanded
+fun PlayerScreen(modifier:Modifier = Modifier, excursion: Excursion,  alpha : Float = 1f, collapse : ()->Unit = {}){ // alpha = 0 collapsed alpha = 1 expanded
     val progress by remember { mutableStateOf(0.5f) }
     val navController = rememberNavController()
 
@@ -46,15 +42,15 @@ fun PlayerScreen(modifier:Modifier = Modifier, alpha : Float = 1f, collapse : ()
                 Box(modifier = modifier.fillMaxWidth()){
                     //Log.i("RASP","alpha $alpha")
                     if(alpha != 1f)
-                        MiniPLayer(modifier, 1 - alpha, progress)
+                        MiniPLayer(modifier, 1 - alpha, progress, excursion.name.value)
                     if(alpha != 0f)
-                        Header(modifier,navController, alpha, collapse)
+                        Header(modifier,navController, alpha, collapse, excursion.name.value)
                 }
                 BigPlayer(modifier.padding(20.dp))
-                Text(text = " Android + Compose = <3 ".repeat(10),
-                    textAlign = TextAlign.Center,
+                Text(text = excursion.steps.first().longText.value,
+                    textAlign = TextAlign.Start,
                     color = if(isSystemInDarkTheme()) Color.White else Color.Black,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize().padding(10.dp)
                 )
             }
         }
@@ -64,8 +60,10 @@ fun PlayerScreen(modifier:Modifier = Modifier, alpha : Float = 1f, collapse : ()
                     .fillMaxWidth()
                     .background(MaterialTheme.colors.background)
             ) {
-                Header(modifier,navController, alpha, collapse)
-                Text("steps", modifier = Modifier.fillMaxSize())
+                Header(modifier,navController, alpha, collapse, excursion.name.value)
+                Text("3/10      ${excursion.name.value}",
+                    modifier = Modifier.fillMaxSize().padding(10.dp)
+                )
             }
         }
     }
@@ -79,6 +77,7 @@ fun Header(
     navController: NavController,
     alpha : Float = 0f,
     collapse : ()->Unit = {},
+    name : String,
 ){
     Row (
         modifier
@@ -103,11 +102,12 @@ fun Header(
                 .weight(1f)
         ){
             Text(
-                text = "Аудио - Экскурсия",
+                text = "Аудио-Экскурсия",
+                color = Color.LightGray,
                 modifier = Modifier.align(CenterHorizontally)
             )
             Text(
-                text = "Название экскрусии",
+                text = "${name.substring(0,kotlin.math.min(name.length, 30))}...",
                 modifier = Modifier.align(CenterHorizontally)
             )
         }
@@ -130,7 +130,7 @@ fun Header(
 }
 
 @Composable
-fun MiniPLayer(modifier:Modifier = Modifier, alpha : Float = 1f, progress : Float){
+fun MiniPLayer(modifier:Modifier = Modifier, alpha : Float = 1f, progress : Float, name : String){
     LinearProgressIndicator(
         backgroundColor = Color.White,
         progress = progress,
@@ -156,8 +156,8 @@ fun MiniPLayer(modifier:Modifier = Modifier, alpha : Float = 1f, progress : Floa
                 tint = MaterialTheme.colors.primaryVariant
             )
         }
-        Text(text = "Description of excursion",
-            modifier = Modifier.align(CenterVertically),
+        Text(text = "${name.substring(0,kotlin.math.min(name.length, 30))}...",
+            modifier = Modifier.align(CenterVertically).weight(1f),
             textAlign = TextAlign.Center,
             color = if(isSystemInDarkTheme()) Color.White else Color.Black
         )
@@ -167,7 +167,7 @@ fun MiniPLayer(modifier:Modifier = Modifier, alpha : Float = 1f, progress : Floa
                 tint = MaterialTheme.colors.primaryVariant
             )
         }
-        Text(text = "1x",
+        Text(text = "1x", // TODO make clickable
             modifier = Modifier.align(CenterVertically),
             textAlign = TextAlign.Center,
             color = if(isSystemInDarkTheme()) Color.White else Color.Black
@@ -246,5 +246,5 @@ fun BigPlayer(modifier : Modifier = Modifier, progress: Float = 0.5f){
 )
 @Composable
 fun PlayerPreview(){
-    PlayerScreen(alpha = 1f)
+    PlayerScreen(excursion = Excursion(), alpha = 1f,)
 }

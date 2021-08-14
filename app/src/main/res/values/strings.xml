@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">AttractionsCompose</string>
+    <string-array name="images_array">
+        <item>https://github.com/imalinowski/Data/blob/main/pic_1.jpg?raw=true</item>
+        <item>https://github.com/imalinowski/Data/blob/main/pic_2.jpg?raw=true</item>
+        <item>https://github.com/imalinowski/Data/blob/main/pic_3.jpg?raw=true</item>
+        <item>https://github.com/imalinowski/Data/blob/main/pic_4.jpg?raw=true</item>
+        <item>https://github.com/imalinowski/Data/blob/main/pic_5.jpg?raw=true</item>
+        <item>https://github.com/imalinowski/Data/blob/main/pic_6.jpeg?raw=true</item>
+    </string-array>
+    <string name="long_text">https://raw.githubusercontent.com/imalinowski/Data/main/long_text.txt</string>
+    <string name="short_text">https://raw.githubusercontent.com/imalinowski/Data/main/short_text.txt</string>
+    <string name="name">https://raw.githubusercontent.com/imalinowski/Data/main/name.txt</string>
+    <string name="audio">https://github.com/imalinowski/Data/blob/main/audio.mp3?raw=true</string>
 </resources>
