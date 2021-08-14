@@ -23,14 +23,18 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.attractionscompose.model.Excursion
+import com.google.android.exoplayer2.SimpleExoPlayer
 import kotlin.math.pow
 
 
 @ExperimentalMaterialApi
 @Composable
 fun PlayerScreen(modifier:Modifier = Modifier, excursion: Excursion,  alpha : Float = 1f, collapse : ()->Unit = {}){ // alpha = 0 collapsed alpha = 1 expanded
-    val progress by remember { mutableStateOf(0.5f) }
+    var progress by remember { mutableStateOf(0.5f) }
     val navController = rememberNavController()
+    progress =
+        excursion.steps.first().player.value.contentPosition.toFloat() / excursion.steps.first().player.value.duration.toInt()
+    Log.i("Rasp", "progress $progress")
 
     NavHost(navController = navController, startDestination = "player") {
         composable("player") {
@@ -42,11 +46,21 @@ fun PlayerScreen(modifier:Modifier = Modifier, excursion: Excursion,  alpha : Fl
                 Box(modifier = modifier.fillMaxWidth()){
                     //Log.i("RASP","alpha $alpha")
                     if(alpha != 1f)
-                        MiniPLayer(modifier, 1 - alpha, progress, excursion.name.value)
+                        MiniPLayer(
+                            modifier,
+                            1 - alpha,
+                            progress ,
+                            excursion.name.value,
+                            excursion.steps.first().player.value,
+                        )
                     if(alpha != 0f)
                         Header(modifier,navController, alpha, collapse, excursion.name.value)
                 }
-                BigPlayer(modifier.padding(20.dp))
+                BigPlayer(
+                    modifier.padding(20.dp),
+                    progress = progress,
+                    player = excursion.steps.first().player.value,
+                )
                 Text(text = excursion.steps.first().longText.value,
                     textAlign = TextAlign.Start,
                     color = if(isSystemInDarkTheme()) Color.White else Color.Black,
@@ -130,12 +144,12 @@ fun Header(
 }
 
 @Composable
-fun MiniPLayer(modifier:Modifier = Modifier, alpha : Float = 1f, progress : Float, name : String){
+fun MiniPLayer(modifier:Modifier = Modifier, alpha : Float = 1f, progress : Float, name : String, player : SimpleExoPlayer){
     LinearProgressIndicator(
         backgroundColor = Color.White,
         progress = progress,
         color = MaterialTheme.colors.primary,
-        modifier = Modifier.graphicsLayer(alpha = alpha.pow(10))
+        modifier = Modifier.graphicsLayer(alpha = alpha.pow(10)).fillMaxWidth()
     )
     Row (
         modifier
@@ -150,9 +164,17 @@ fun MiniPLayer(modifier:Modifier = Modifier, alpha : Float = 1f, progress : Floa
                 tint = MaterialTheme.colors.primaryVariant
             )
         }
-        IconButton(onClick = { Log.i("RASP","hi") }, enabled = alpha == 1f) {
+        IconButton(onClick = {
+            if(player.isPlaying)
+                player.stop()
+            else {
+                player.prepare()
+                player.play()
+            }
+        },
+            enabled = alpha == 1f) {
             Icon(
-                Icons.Rounded.Pause, "Icon",
+                if(player.isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, "Icon",
                 tint = MaterialTheme.colors.primaryVariant
             )
         }
@@ -182,21 +204,29 @@ fun MiniPLayer(modifier:Modifier = Modifier, alpha : Float = 1f, progress : Floa
 }
 
 @Composable
-fun BigPlayer(modifier : Modifier = Modifier, progress: Float = 0.5f){
+fun BigPlayer(modifier : Modifier = Modifier, progress: Float = 0.5f, player : SimpleExoPlayer){
     Card (
         modifier
     ){
         Column(modifier) {
             Text("Welcome text")
-            Slider(value = progress, onValueChange = {  })
+            Slider(value = progress, onValueChange = {
+                player.seekTo((it * player.duration).toLong())
+            })
             Row(
                 Modifier.fillMaxWidth()
             ){
-                Text("0:45",
+                Text(
+                    player.currentPosition.let{
+                        "${it / 1000 / 60}:${it / 1000 % 60}"
+                    },
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Start
                 )
-                Text("0:30",
+                Text(
+                    player.duration.let{
+                        "${it / 1000 / 60}:${it / 1000 % 60}"
+                    },
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.End
                 )
@@ -216,13 +246,20 @@ fun BigPlayer(modifier : Modifier = Modifier, progress: Float = 0.5f){
                     )
                 }
                 IconButton(
-                    onClick = { Log.i("RASP","hi") },
+                    onClick = {
+                        if(player.isPlaying)
+                            player.stop()
+                        else {
+                            player.prepare()
+                            player.play()
+                        }
+                    },
                     modifier = modifierBtn.clip(CircleShape)
                         .background(MaterialTheme.colors.secondary)
                         .size(65.dp)
                 ) {
                     Icon(
-                        Icons.Rounded.PlayArrow, "Icon",
+                        if(player.isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, "Icon",
                         tint = MaterialTheme.colors.background
                     )
                 }

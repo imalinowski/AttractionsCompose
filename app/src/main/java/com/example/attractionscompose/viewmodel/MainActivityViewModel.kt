@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import android.widget.ImageView
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
@@ -15,14 +16,22 @@ import com.android.volley.toolbox.Volley
 import com.example.attractionscompose.model.Excursion
 import com.example.attractionscompose.model.Step
 import com.example.attractionscompose.R
-
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.SimpleExoPlayer
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application){
     private val data : Array<String> = (getApplication() as Context).resources.getStringArray(R.array.images_array)
     val excursion = MutableLiveData<Excursion>().apply {
-        value = Excursion(steps = mutableListOf(Step(
-            images = MutableList(data.size) { null }
-        )))
+        value = Excursion(
+            steps = mutableListOf(
+                Step(images = MutableList(data.size) { null },
+                    player = mutableStateOf(SimpleExoPlayer.Builder((getApplication() as Context)).build().apply {
+                        setMediaItem(MediaItem.fromUri((getApplication() as Context).resources.getString(R.string.audio)))
+                        prepare()
+                    })
+                )
+            )
+        )
     }
     init{
         val queue = Volley.newRequestQueue(getApplication())
@@ -71,5 +80,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 excursion.postValue(excursion.value)
             },
         ) { error -> Log.e("RASP", error.message.toString()) })
+
     }
 }
