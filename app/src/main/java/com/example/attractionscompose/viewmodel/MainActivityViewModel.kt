@@ -5,7 +5,10 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import android.widget.ImageView
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
@@ -16,6 +19,7 @@ import com.android.volley.toolbox.Volley
 import com.example.attractionscompose.model.Excursion
 import com.example.attractionscompose.model.Step
 import com.example.attractionscompose.R
+import com.example.attractionscompose.view.playing
 import com.example.attractionscompose.view.progress
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.SimpleExoPlayer
@@ -29,7 +33,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     val excursion = MutableLiveData<Excursion>().apply {
         value = Excursion(
             steps = mutableListOf(
-                Step(images = MutableList(data.size) { null },
+                Step(
                     player = mutableStateOf(SimpleExoPlayer.Builder((getApplication() as Context)).build().apply {
                         setMediaItem(MediaItem.fromUri((getApplication() as Context).resources.getString(R.string.audio)))
                         prepare()
@@ -41,10 +45,8 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     init{
         val queue = Volley.newRequestQueue(getApplication())
 
-        val list = mutableListOf(1,2,3)
-        list[list.indexOf(2)] = 3
-
         for (url in data){
+            excursion.value?.steps?.first()?.images!!.add(null)
             queue.add(ImageRequest(
                 url,  // Image URL
                 { response ->
@@ -91,6 +93,14 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 delay((1000 / 60))
                 excursion.value?.steps?.first()?.player?.value!!.apply {
                     progress.value = this.currentPosition.toFloat() / this.duration.toFloat()
+                }
+                if(progress.value >= 1f) {
+                    excursion.value?.steps?.first()?.player?.value!!.apply {
+                        seekTo(0)
+                        pause()
+                    }
+                    progress.value = 0f
+                    playing.value = false
                 }
             }
         }

@@ -11,6 +11,6 @@ data class Step (
     var name: MutableState<String> = mutableStateOf(""),
     var shortText: MutableState<String> = mutableStateOf(""),
     var longText: MutableState<String> = mutableStateOf(""),
-    val images: MutableList<ImageBitmap?> = mutableStateListOf(),
+    val images: SnapshotStateList<ImageBitmap?> = mutableStateListOf(),
     var player : MutableState<SimpleExoPlayer>
 )

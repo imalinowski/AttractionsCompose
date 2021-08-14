@@ -2,6 +2,7 @@ package com.example.attractionscompose.view
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -25,9 +26,14 @@ import androidx.navigation.compose.rememberNavController
 import com.example.attractionscompose.model.Excursion
 import com.google.android.exoplayer2.SimpleExoPlayer
 import kotlin.math.pow
+import com.google.android.exoplayer2.PlaybackParameters
+
+
+
 
 var playing  = mutableStateOf(false)
 var progress = mutableStateOf(0.0f)
+var speed = "1x"
 
 @ExperimentalMaterialApi
 @Composable
@@ -60,7 +66,9 @@ fun PlayerScreen(modifier:Modifier = Modifier, excursion: Excursion,  alpha : Fl
                 Text(text = excursion.steps.first().longText.value,
                     textAlign = TextAlign.Start,
                     color = if(isSystemInDarkTheme()) Color.White else Color.Black,
-                    modifier = Modifier.fillMaxSize().padding(10.dp)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(10.dp)
                 )
             }
         }
@@ -72,7 +80,9 @@ fun PlayerScreen(modifier:Modifier = Modifier, excursion: Excursion,  alpha : Fl
             ) {
                 Header(modifier,navController, alpha, collapse, excursion.name.value)
                 Text("3/10      ${excursion.name.value}",
-                    modifier = Modifier.fillMaxSize().padding(10.dp)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(10.dp)
                 )
             }
         }
@@ -146,7 +156,9 @@ fun MiniPLayer(modifier:Modifier = Modifier, alpha : Float = 1f, name : String, 
         backgroundColor = Color.White,
         progress = progress.value,
         color = MaterialTheme.colors.primary,
-        modifier = Modifier.graphicsLayer(alpha = alpha.pow(10)).fillMaxWidth()
+        modifier = Modifier
+            .graphicsLayer(alpha = alpha.pow(10))
+            .fillMaxWidth()
     )
     Row (
         modifier
@@ -178,7 +190,9 @@ fun MiniPLayer(modifier:Modifier = Modifier, alpha : Float = 1f, name : String, 
             )
         }
         Text(text = "${name.substring(0,kotlin.math.min(name.length, 30))}...",
-            modifier = Modifier.align(CenterVertically).weight(1f),
+            modifier = Modifier
+                .align(CenterVertically)
+                .weight(1f),
             textAlign = TextAlign.Center,
             color = if(isSystemInDarkTheme()) Color.White else Color.Black
         )
@@ -192,8 +206,18 @@ fun MiniPLayer(modifier:Modifier = Modifier, alpha : Float = 1f, name : String, 
                 tint = MaterialTheme.colors.primaryVariant
             )
         }
-        Text(text = "1x", // TODO make clickable
-            modifier = Modifier.align(CenterVertically),
+        Text(text = speed,
+            modifier = Modifier
+                .align(CenterVertically)
+                .clickable {
+                    val _speed = when(speed){
+                        "1x","1.0x" -> 1.5f
+                        "1.5x"-> 2f
+                        else -> 1f
+                    }
+                    speed = "${_speed}x"
+                    player.playbackParameters = PlaybackParameters(_speed)
+                },
             textAlign = TextAlign.Center,
             color = if(isSystemInDarkTheme()) Color.White else Color.Black
         )
@@ -244,7 +268,9 @@ fun BigPlayer(modifier : Modifier = Modifier, player : SimpleExoPlayer){
                 Modifier
                     .align(CenterHorizontally)
             ){
-                val modifierBtn = Modifier.weight(1f).align(CenterVertically)
+                val modifierBtn = Modifier
+                    .weight(1f)
+                    .align(CenterVertically)
                 Spacer(modifierBtn)
                 IconButton(
                     modifier = modifierBtn,
@@ -266,7 +292,8 @@ fun BigPlayer(modifier : Modifier = Modifier, player : SimpleExoPlayer){
                         else
                             player.play()
                     },
-                    modifier = modifierBtn.clip(CircleShape)
+                    modifier = modifierBtn
+                        .clip(CircleShape)
                         .background(MaterialTheme.colors.secondary)
                         .size(65.dp)
                 ) {
@@ -286,8 +313,16 @@ fun BigPlayer(modifier : Modifier = Modifier, player : SimpleExoPlayer){
                         tint = MaterialTheme.colors.primaryVariant
                     )
                 }
-                Text("1x", textAlign = TextAlign.Center,
-                    modifier = modifierBtn)
+                Text(speed, textAlign = TextAlign.Center,
+                    modifier = modifierBtn.clickable {
+                        val _speed = when(speed){
+                            "1x","1.0x" -> 1.5f
+                            "1.5x"-> 2f
+                            else -> 1f
+                        }
+                        speed = "${_speed}x"
+                        player.playbackParameters = PlaybackParameters(_speed)
+                    },)
             }
         }
     }
@@ -299,5 +334,5 @@ fun BigPlayer(modifier : Modifier = Modifier, player : SimpleExoPlayer){
 )
 @Composable
 fun PlayerPreview(){
-    PlayerScreen(excursion = Excursion(), alpha = 1f,)
+    PlayerScreen(excursion = Excursion(), alpha = 1f)
 }
