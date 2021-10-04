@@ -16,9 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -241,7 +243,11 @@ fun BigPlayer(modifier : Modifier = Modifier, player : SimpleExoPlayer){
         modifier
     ){
         Column(modifier) {
-            Text("Welcome text")
+            Text(
+                "Welcome to Paris",
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            )
             Slider(value = progress.value, onValueChange = {
                 player.seekTo((it * player.duration).toLong())
                 progress.value = player.currentPosition.toFloat() / player.duration.toFloat()
